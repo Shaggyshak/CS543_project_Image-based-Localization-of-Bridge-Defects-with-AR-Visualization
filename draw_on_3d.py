@@ -5,7 +5,7 @@ Created on Thu May  2 10:02:04 2019
 @author: liuhong2
 """
 #%%
-%autoreload 2
+# %autoreload 2
 import os
 import sys
 from PIL import Image
@@ -23,6 +23,7 @@ import pptk
 from open3d import *
 import plyfile
 import matplotlib.patches as patches
+import time
 #%% test image dir
 test_dir = './cropped_test_image/test2.jpg'
 #%% preload sift of reference if not exist
@@ -30,7 +31,7 @@ try:
     ref_kp[0]
 except:
     print('No preloaded model, sift detecting the reference image now............')
-    ref_kp, ref_des, reference_name = find_camera.detect_reference() # get the reference kep point and descrption
+    ref_kp, ref_des, reference_name, ref_kp_c, ref_des_c = find_camera.detect_reference() # get the reference kep point and descrption
     print('Finished the sift detection of the reference image')
 #%% load test image data, just 1 image
 print('load the test image.........')
@@ -40,7 +41,10 @@ print('Finished load the test image')
 print('previewing the sparse reconstruction data');sparse_recon()
 print('previewing the reference data.....');xyz,rgb = dense_recon()
 #%% try match the test image and reference image and visualize as histogram
-print('matching the test image with reference');num_matches = find_camera.match_all(reference_name,ref_kp,ref_des,des1)
+start = time.time()
+print('start time:', start)
+print('matching the test image with reference');num_matches = find_camera.match_all(reference_name,ref_kp_c,ref_des_c,des1)
+print('end time:',time.time() - start)
 print('Finished matching the test image with reference');valid_index = find_camera.visual_hist(num_matches)
 print('Drawing highest score matching');find_camera.visual_match(valid_index,ref_kp,ref_des,kp1,des1,test_dir,reference_name)
 #%% remove the out lier from the matching data
@@ -81,7 +85,7 @@ def draw_box(d3_point,xyz,rgb):
     re.points = Vector3dVector(xyz)
     re.colors = Vector3dVector(rgb/255.)
     draw_geometries([line_set,re])
-print('draw the final graph for visual');draw_box(d3_point,xyz,rgb)
+# print('draw the final graph for visual');draw_box(d3_point,xyz,rgb)
 #print('Getting good 3d point matching the test image');good_point = find_camera.camera2d_point_loc(valid_index,point_camera,matched_point,point_2dlocation,point_position)
 #print('Calculate the mean location of the good point');center,s = compute_center(good_point)
 

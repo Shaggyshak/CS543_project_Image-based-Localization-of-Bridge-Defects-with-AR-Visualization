@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import cv2
 import heapq
 import matplotlib.patches as patches
+from ROI import crop_images
 #%% load model
 sift = cv2.xfeatures2d.SIFT_create()
 FLANN_INDEX_KDTREE = 0
@@ -37,7 +38,9 @@ def load_test(test_dir):
 def detect_reference():
     ref_kp = []
     ref_des = []
-    reference_dir = './reference_image'
+    ref_kp_c = []
+    ref_des_c = []
+    reference_dir = './reference_images' 
     reference_name = os.listdir(reference_dir)
     i = 0
     for ele in reference_name:
@@ -47,14 +50,21 @@ def detect_reference():
     for j in range(len(reference_name)):
         a = cv2.imread(reference_name[j])
         a = cv2.cvtColor(a,cv2.COLOR_BGR2GRAY)
+        a_cropped = crop_images(a)
+        print('size:', a_cropped.shape )
         kp2,des2 = sift.detectAndCompute(a,None)
+        kp_c, des_c = sift.detectAndCompute(a_cropped, None)
+
         ref_kp.append(kp2)
         ref_des.append(des2)
+        ref_kp_c.append(kp_c)
+        ref_des_c.append(des_c)
         print(j)
-    return ref_kp,ref_des,reference_name
+    return ref_kp,ref_des,reference_name, ref_kp_c, ref_des_c
 
 #%% match between test image and reference image
 def match_all(reference_name,ref_kp,ref_des,des1):
+
     num_matches= []
     for j in range(len(reference_name)):
         kp2 = ref_kp[j]
